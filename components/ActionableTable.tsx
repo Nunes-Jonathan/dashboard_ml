@@ -5,13 +5,23 @@ import type { ActionableRow } from "@/lib/types";
 
 type SortKey = keyof Pick<
   ActionableRow,
-  "placa" | "cliente" | "regional" | "diasOffline" | "prioridadeGuerra" | "situacao" | "responsavel"
+  | "placa"
+  | "cliente"
+  | "mlp"
+  | "svc"
+  | "regional"
+  | "diasOffline"
+  | "prioridadeGuerra"
+  | "situacao"
+  | "responsavel"
 >;
 
 const COLUMNS: { key: SortKey; label: string }[] = [
   { key: "placa", label: "Placa" },
+  { key: "mlp", label: "MLP" },
   { key: "cliente", label: "Cliente" },
   { key: "regional", label: "Regional" },
+  { key: "svc", label: "SVC" },
   { key: "diasOffline", label: "Dias offline" },
   { key: "prioridadeGuerra", label: "Prioridade" },
   { key: "situacao", label: "Situação" },
@@ -33,6 +43,8 @@ function priorityRank(label: string): number {
 export default function ActionableTable({ rows }: { rows: ActionableRow[] }) {
   const [search, setSearch] = useState("");
   const [cliente, setCliente] = useState("");
+  const [mlp, setMlp] = useState("");
+  const [svc, setSvc] = useState("");
   const [regional, setRegional] = useState("");
   const [responsavel, setResponsavel] = useState("");
   const [prioridade, setPrioridade] = useState("");
@@ -41,6 +53,8 @@ export default function ActionableTable({ rows }: { rows: ActionableRow[] }) {
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
 
   const clientes = useMemo(() => uniqueSorted(rows.map((r) => r.cliente)), [rows]);
+  const mlps = useMemo(() => uniqueSorted(rows.map((r) => r.mlp)), [rows]);
+  const svcs = useMemo(() => uniqueSorted(rows.map((r) => r.svc)), [rows]);
   const regionais = useMemo(() => uniqueSorted(rows.map((r) => r.regional)), [rows]);
   const responsaveis = useMemo(() => uniqueSorted(rows.map((r) => r.responsavel)), [rows]);
   const prioridades = useMemo(() => uniqueSorted(rows.map((r) => r.prioridadeGuerra)), [rows]);
@@ -50,6 +64,8 @@ export default function ActionableTable({ rows }: { rows: ActionableRow[] }) {
     let out = rows.filter((r) => {
       if (q && !r.placa.toUpperCase().includes(q)) return false;
       if (cliente && r.cliente !== cliente) return false;
+      if (mlp && r.mlp !== mlp) return false;
+      if (svc && r.svc !== svc) return false;
       if (regional && r.regional !== regional) return false;
       if (responsavel && r.responsavel !== responsavel) return false;
       if (prioridade && r.prioridadeGuerra !== prioridade) return false;
@@ -70,7 +86,19 @@ export default function ActionableTable({ rows }: { rows: ActionableRow[] }) {
     });
 
     return out;
-  }, [rows, search, cliente, regional, responsavel, prioridade, semChamadoOnly, sortKey, sortDir]);
+  }, [
+    rows,
+    search,
+    cliente,
+    mlp,
+    svc,
+    regional,
+    responsavel,
+    prioridade,
+    semChamadoOnly,
+    sortKey,
+    sortDir,
+  ]);
 
   function toggleSort(key: SortKey) {
     if (key === sortKey) {
@@ -105,6 +133,32 @@ export default function ActionableTable({ rows }: { rows: ActionableRow[] }) {
           {clientes.map((c) => (
             <option key={c} value={c}>
               {c}
+            </option>
+          ))}
+        </select>
+        <select
+          value={mlp}
+          onChange={(e) => setMlp(e.target.value)}
+          className={selectClass}
+          style={{ borderColor: "var(--border)" }}
+        >
+          <option value="">Todos os MLPs</option>
+          {mlps.map((m) => (
+            <option key={m} value={m}>
+              {m}
+            </option>
+          ))}
+        </select>
+        <select
+          value={svc}
+          onChange={(e) => setSvc(e.target.value)}
+          className={selectClass}
+          style={{ borderColor: "var(--border)" }}
+        >
+          <option value="">Todos os SVC</option>
+          {svcs.map((s) => (
+            <option key={s} value={s}>
+              {s}
             </option>
           ))}
         </select>
@@ -190,8 +244,10 @@ export default function ActionableTable({ rows }: { rows: ActionableRow[] }) {
                 className="hover:bg-[var(--page)]"
               >
                 <td className="px-3 py-2 font-medium tabular-nums text-[var(--ink)]">{r.placa}</td>
+                <td className="px-3 py-2 text-[var(--ink-secondary)]">{r.mlp || "—"}</td>
                 <td className="px-3 py-2 text-[var(--ink-secondary)]">{r.cliente || "—"}</td>
                 <td className="px-3 py-2 text-[var(--ink-secondary)]">{r.regional || "—"}</td>
+                <td className="px-3 py-2 text-[var(--ink-secondary)]">{r.svc || "—"}</td>
                 <td className="px-3 py-2 tabular-nums text-[var(--ink)]">
                   {r.diasOffline ?? "—"}
                 </td>

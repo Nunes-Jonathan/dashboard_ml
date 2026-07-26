@@ -5,15 +5,17 @@ import {
   bucketDiasOffline,
   computeKpis,
   countBy,
+  countByDate,
   topN,
 } from "@/lib/metrics";
-import KpiHeader from "@/components/KpiHeader";
+import KpiHeader, { StatusKpiRow } from "@/components/KpiHeader";
 import ChartCard from "@/components/ChartCard";
 import BarList from "@/components/BarList";
 import StatusVecChart from "@/components/charts/StatusVecChart";
 import PriorityChart from "@/components/charts/PriorityChart";
 import SituacaoChart from "@/components/charts/SituacaoChart";
 import AgingChart from "@/components/charts/AgingChart";
+import AgendamentoPorDataChart from "@/components/charts/AgendamentoPorDataChart";
 import ActionableTable from "@/components/ActionableTable";
 import ThemeToggle from "@/components/ThemeToggle";
 import RefreshButton from "@/components/RefreshButton";
@@ -45,6 +47,7 @@ export default async function DashboardPage() {
     10
   );
   const acaoAgingItems = bucketDiasDesdeAcao(tickets.map((t) => t.diasDesdeUltimaAcao));
+  const agendamentoPorDataItems = countByDate(tickets.map((t) => t.abertoEm));
 
   return (
     <div className="min-h-screen bg-[var(--page)]">
@@ -67,6 +70,7 @@ export default async function DashboardPage() {
 
       <main className="mx-auto max-w-7xl px-4 sm:px-6 py-6 flex flex-col gap-6">
         <KpiHeader kpis={kpis} />
+        <StatusKpiRow kpis={kpis} />
 
         <section className="flex flex-col gap-3">
           <h2 className="text-sm font-semibold text-[var(--ink-secondary)] uppercase tracking-wide">
@@ -95,6 +99,9 @@ export default async function DashboardPage() {
           <h2 className="text-sm font-semibold text-[var(--ink-secondary)] uppercase tracking-wide">
             Triagem de chamados (AGENDAMENTO)
           </h2>
+          <ChartCard title="Chamados abertos por data" subtitle="Aberto em, por dia">
+            <AgendamentoPorDataChart items={agendamentoPorDataItems} />
+          </ChartCard>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <ChartCard title="Prioridade" subtitle="Prioridade guerra">
               <PriorityChart items={prioridadeItems} />

@@ -72,3 +72,19 @@ export default function KpiHeader({ kpis }: { kpis: DashboardKpis }) {
     </div>
   );
 }
+
+export function StatusKpiRow({ kpis }: { kpis: DashboardKpis }) {
+  return (
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <KpiCard
+        label="Offline em rota"
+        value={String(kpis.offlineEmRota)}
+        sub="Offline com status ativo"
+        accent="critical"
+      />
+      <KpiCard label="Pendente" value={String(kpis.statusPendente)} accent="warning" />
+      <KpiCard label="Em tratativa" value={String(kpis.statusTratativa)} />
+      <KpiCard label="Agendado" value={String(kpis.statusAgendado)} accent="good" />
+    </div>
+  );
+}

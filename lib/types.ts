@@ -47,6 +47,8 @@ export interface TicketRow {
 export interface ActionableRow {
   placa: string;
   cliente: string;
+  mlp: string;
+  svc: string;
   regional: string;
   statusVec: string;
   diasOffline: number | null;

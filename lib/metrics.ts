@@ -64,6 +64,35 @@ export function bucketDiasDesdeAcao(values: (number | null)[]): CountItem[] {
   return bucketValues(values, ACAO_BUCKETS);
 }
 
+/**
+ * Groups timestamp strings like "2026-07-14 10:32:00" by calendar day and
+ * returns them in chronological order (a time series, unlike countBy/topN
+ * which rank by magnitude), filling gaps between the first and last day with
+ * zero counts so the chart reads as a continuous calendar, not just the days
+ * that happened to have activity.
+ */
+export function countByDate(values: string[]): CountItem[] {
+  const counts = new Map<string, number>();
+  for (const v of values) {
+    const isoDay = v.trim().slice(0, 10);
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDay)) continue;
+    counts.set(isoDay, (counts.get(isoDay) ?? 0) + 1);
+  }
+  if (counts.size === 0) return [];
+
+  const days = [...counts.keys()].sort();
+  const cursor = new Date(`${days[0]}T00:00:00Z`);
+  const end = new Date(`${days[days.length - 1]}T00:00:00Z`);
+  const out: CountItem[] = [];
+  while (cursor.getTime() <= end.getTime()) {
+    const isoDay = cursor.toISOString().slice(0, 10);
+    const [, month, day] = isoDay.split("-");
+    out.push({ label: `${day}/${month}`, count: counts.get(isoDay) ?? 0 });
+    cursor.setUTCDate(cursor.getUTCDate() + 1);
+  }
+  return out;
+}
+
 function avg(values: number[]): number | null {
   if (values.length === 0) return null;
   return values.reduce((a, b) => a + b, 0) / values.length;
@@ -80,6 +109,10 @@ export interface DashboardKpis {
   openCases: number;
   totalCases: number;
   resolvedPct: number;
+  offlineEmRota: number;
+  statusPendente: number;
+  statusTratativa: number;
+  statusAgendado: number;
 }
 
 export function computeKpis(fleet: FleetRow[], tickets: TicketRow[]): DashboardKpis {
@@ -94,6 +127,15 @@ export function computeKpis(fleet: FleetRow[], tickets: TicketRow[]): DashboardK
     t.statusNorm.trim().toLowerCase().startsWith("fechado")
   );
 
+  const offlineEmRota = offline.filter((f) =>
+    f.statusVec.trim().toLowerCase().startsWith("ativo")
+  ).length;
+  const statusPendente = fleet.filter((f) => f.status.trim().toLowerCase() === "pendente").length;
+  const statusTratativa = fleet.filter(
+    (f) => f.status.trim().toLowerCase() === "em tratativa"
+  ).length;
+  const statusAgendado = fleet.filter((f) => f.status.trim().toLowerCase() === "agendado").length;
+
   return {
     totalVehicles,
     offlineCount: offline.length,
@@ -105,6 +147,10 @@ export function computeKpis(fleet: FleetRow[], tickets: TicketRow[]): DashboardK
     openCases: open.length,
     totalCases,
     resolvedPct: totalCases ? (resolved.length / totalCases) * 100 : 0,
+    offlineEmRota,
+    statusPendente,
+    statusTratativa,
+    statusAgendado,
   };
 }
 
@@ -125,6 +171,8 @@ export function buildActionableRows(fleet: FleetRow[], tickets: TicketRow[]): Ac
       return {
         placa: t.placa,
         cliente: t.clienteOrigem || t.cliente || fleetRow?.mlp || "",
+        mlp: fleetRow?.mlp ?? "",
+        svc: fleetRow?.svc ?? "",
         regional: fleetRow?.regional ?? "",
         statusVec: fleetRow?.statusVec ?? "",
         diasOffline: fleetRow?.diasOffline ?? null,
