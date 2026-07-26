@@ -31,17 +31,18 @@ export default function SiteHeader({
           <ThemeToggle />
         </div>
       </div>
-      <nav className="mx-auto max-w-7xl px-4 sm:px-6 pb-3 flex items-center gap-4">
+      <nav className="mx-auto max-w-7xl px-4 sm:px-6 pb-3 flex items-center gap-2">
         {NAV_LINKS.map((link) => {
           const active = pathname === link.href;
           return (
             <Link
               key={link.href}
               href={link.href}
-              className="text-xs font-medium pb-1"
+              className="text-sm font-medium rounded-md px-3 py-1.5 transition-colors"
               style={{
-                color: active ? "var(--ink)" : "var(--ink-muted)",
-                borderBottom: active ? "2px solid var(--ink)" : "2px solid transparent",
+                color: active ? "var(--ink)" : "var(--ink-secondary)",
+                background: active ? "var(--page)" : "transparent",
+                border: `1px solid ${active ? "var(--border)" : "transparent"}`,
               }}
             >
               {link.label}
