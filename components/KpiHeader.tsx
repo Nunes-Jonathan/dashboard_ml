@@ -1,43 +1,11 @@
 import type { DashboardKpis } from "@/lib/metrics";
 import { round1 } from "@/lib/metrics";
+import KpiCard from "@/components/KpiCard";
 
 function statusForNoTicketPct(pct: number): "good" | "warning" | "critical" {
   if (pct >= 50) return "critical";
   if (pct >= 20) return "warning";
   return "good";
-}
-
-const STATUS_TEXT = {
-  good: "var(--success-text)",
-  warning: "#fab219",
-  critical: "#d03b3b",
-};
-
-interface KpiCardProps {
-  label: string;
-  value: string;
-  sub?: string;
-  accent?: "good" | "warning" | "critical";
-}
-
-function KpiCard({ label, value, sub, accent }: KpiCardProps) {
-  return (
-    <div
-      className="rounded-xl border p-4 flex flex-col gap-1 bg-[var(--surface)]"
-      style={{ borderColor: "var(--border)" }}
-    >
-      <span className="text-xs uppercase tracking-wide text-[var(--ink-muted)]">
-        {label}
-      </span>
-      <span
-        className="text-2xl font-semibold"
-        style={{ color: accent ? STATUS_TEXT[accent] : "var(--ink)" }}
-      >
-        {value}
-      </span>
-      {sub && <span className="text-xs text-[var(--ink-secondary)]">{sub}</span>}
-    </div>
-  );
 }
 
 export default function KpiHeader({ kpis }: { kpis: DashboardKpis }) {

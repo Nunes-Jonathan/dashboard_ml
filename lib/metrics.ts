@@ -38,7 +38,10 @@ const OFFLINE_BUCKETS: [number, number, string][] = [
   [91, Infinity, "90+ dias"],
 ];
 
-function bucketValues(values: (number | null)[], buckets: [number, number, string][]): CountItem[] {
+export function bucketValues(
+  values: (number | null)[],
+  buckets: [number, number, string][]
+): CountItem[] {
   const counts = buckets.map(([, , label]) => ({ label, count: 0 }));
   for (const v of values) {
     if (v === null) continue;
@@ -154,15 +157,15 @@ export function computeKpis(fleet: FleetRow[], tickets: TicketRow[]): DashboardK
   };
 }
 
-function normPlaca(v: string): string {
+export function normPlaca(v: string): string {
   return v.trim().toUpperCase();
 }
 
-function resolveCliente(t: TicketRow | undefined, fleetRow: FleetRow | undefined): string {
+export function resolveCliente(t: TicketRow | undefined, fleetRow: FleetRow | undefined): string {
   return t?.clienteOrigem || t?.cliente || fleetRow?.mlp || "";
 }
 
-function indexByPlaca<T extends { placa: string }>(rows: T[]): Map<string, T> {
+export function indexByPlaca<T extends { placa: string }>(rows: T[]): Map<string, T> {
   const map = new Map<string, T>();
   for (const r of rows) {
     if (r.placa) map.set(normPlaca(r.placa), r);
