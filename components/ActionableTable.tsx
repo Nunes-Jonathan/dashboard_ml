@@ -28,10 +28,6 @@ const COLUMNS: { key: SortKey; label: string }[] = [
   { key: "responsavel", label: "Responsável" },
 ];
 
-function uniqueSorted(values: string[]): string[] {
-  return [...new Set(values.filter(Boolean))].sort((a, b) => a.localeCompare(b, "pt-BR"));
-}
-
 function priorityRank(label: string): number {
   const l = label.toLowerCase();
   if (l.includes("crítica") || l.includes("critica")) return 0;
@@ -40,35 +36,21 @@ function priorityRank(label: string): number {
   return 3;
 }
 
+/**
+ * Renders the (already globally filtered — see FilterBar/Dashboard) rows,
+ * with a couple of list-only refinements: free-text plate search and the
+ * "sem chamado" quick toggle, plus column sorting.
+ */
 export default function ActionableTable({ rows }: { rows: ActionableRow[] }) {
   const [search, setSearch] = useState("");
-  const [cliente, setCliente] = useState("");
-  const [mlp, setMlp] = useState("");
-  const [svc, setSvc] = useState("");
-  const [regional, setRegional] = useState("");
-  const [responsavel, setResponsavel] = useState("");
-  const [prioridade, setPrioridade] = useState("");
   const [semChamadoOnly, setSemChamadoOnly] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("diasOffline");
   const [sortDir, setSortDir] = useState<"asc" | "desc">("desc");
-
-  const clientes = useMemo(() => uniqueSorted(rows.map((r) => r.cliente)), [rows]);
-  const mlps = useMemo(() => uniqueSorted(rows.map((r) => r.mlp)), [rows]);
-  const svcs = useMemo(() => uniqueSorted(rows.map((r) => r.svc)), [rows]);
-  const regionais = useMemo(() => uniqueSorted(rows.map((r) => r.regional)), [rows]);
-  const responsaveis = useMemo(() => uniqueSorted(rows.map((r) => r.responsavel)), [rows]);
-  const prioridades = useMemo(() => uniqueSorted(rows.map((r) => r.prioridadeGuerra)), [rows]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toUpperCase();
     let out = rows.filter((r) => {
       if (q && !r.placa.toUpperCase().includes(q)) return false;
-      if (cliente && r.cliente !== cliente) return false;
-      if (mlp && r.mlp !== mlp) return false;
-      if (svc && r.svc !== svc) return false;
-      if (regional && r.regional !== regional) return false;
-      if (responsavel && r.responsavel !== responsavel) return false;
-      if (prioridade && r.prioridadeGuerra !== prioridade) return false;
       if (semChamadoOnly && r.temChamado.trim().toLowerCase() !== "não") return false;
       return true;
     });
@@ -86,19 +68,7 @@ export default function ActionableTable({ rows }: { rows: ActionableRow[] }) {
     });
 
     return out;
-  }, [
-    rows,
-    search,
-    cliente,
-    mlp,
-    svc,
-    regional,
-    responsavel,
-    prioridade,
-    semChamadoOnly,
-    sortKey,
-    sortDir,
-  ]);
+  }, [rows, search, semChamadoOnly, sortKey, sortDir]);
 
   function toggleSort(key: SortKey) {
     if (key === sortKey) {
@@ -123,84 +93,6 @@ export default function ActionableTable({ rows }: { rows: ActionableRow[] }) {
           className={`${selectClass} w-40`}
           style={{ borderColor: "var(--border)" }}
         />
-        <select
-          value={cliente}
-          onChange={(e) => setCliente(e.target.value)}
-          className={selectClass}
-          style={{ borderColor: "var(--border)" }}
-        >
-          <option value="">Todos os clientes</option>
-          {clientes.map((c) => (
-            <option key={c} value={c}>
-              {c}
-            </option>
-          ))}
-        </select>
-        <select
-          value={mlp}
-          onChange={(e) => setMlp(e.target.value)}
-          className={selectClass}
-          style={{ borderColor: "var(--border)" }}
-        >
-          <option value="">Todos os MLPs</option>
-          {mlps.map((m) => (
-            <option key={m} value={m}>
-              {m}
-            </option>
-          ))}
-        </select>
-        <select
-          value={svc}
-          onChange={(e) => setSvc(e.target.value)}
-          className={selectClass}
-          style={{ borderColor: "var(--border)" }}
-        >
-          <option value="">Todos os SVC</option>
-          {svcs.map((s) => (
-            <option key={s} value={s}>
-              {s}
-            </option>
-          ))}
-        </select>
-        <select
-          value={regional}
-          onChange={(e) => setRegional(e.target.value)}
-          className={selectClass}
-          style={{ borderColor: "var(--border)" }}
-        >
-          <option value="">Todas as regionais</option>
-          {regionais.map((r) => (
-            <option key={r} value={r}>
-              {r}
-            </option>
-          ))}
-        </select>
-        <select
-          value={responsavel}
-          onChange={(e) => setResponsavel(e.target.value)}
-          className={selectClass}
-          style={{ borderColor: "var(--border)" }}
-        >
-          <option value="">Todos os responsáveis</option>
-          {responsaveis.map((r) => (
-            <option key={r} value={r}>
-              {r}
-            </option>
-          ))}
-        </select>
-        <select
-          value={prioridade}
-          onChange={(e) => setPrioridade(e.target.value)}
-          className={selectClass}
-          style={{ borderColor: "var(--border)" }}
-        >
-          <option value="">Todas as prioridades</option>
-          {prioridades.map((p) => (
-            <option key={p} value={p}>
-              {p}
-            </option>
-          ))}
-        </select>
         <label className="flex items-center gap-1.5 text-xs text-[var(--ink-secondary)]">
           <input
             type="checkbox"
