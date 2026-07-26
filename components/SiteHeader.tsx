@@ -8,6 +8,7 @@ import RefreshButton from "@/components/RefreshButton";
 const NAV_LINKS = [
   { href: "/", label: "Visão Geral" },
   { href: "/frota-offline", label: "Frota Offline Detalhado" },
+  { href: "/geotab", label: "Geotab" },
 ];
 
 export default function SiteHeader({

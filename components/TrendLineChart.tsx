@@ -2,18 +2,23 @@
 
 import { useMemo, useRef, useState, type MouseEvent } from "react";
 import { useChartColors } from "@/lib/colors";
-import type { TendenciaPoint } from "@/lib/externalTelemetria";
 
 const WIDTH = 900;
 const HEIGHT = 200;
 const PADDING = { top: 16, right: 12, bottom: 24, left: 36 };
+
+export interface TrendPoint {
+  data_referencia: string;
+  pct_offline: number;
+  offline?: number;
+}
 
 function formatDateLabel(iso: string): string {
   const [, month, day] = iso.split("-");
   return `${day}/${month}`;
 }
 
-export default function TrendLineChart({ points }: { points: TendenciaPoint[] }) {
+export default function TrendLineChart({ points }: { points: TrendPoint[] }) {
   const { chrome, sequential } = useChartColors();
   const svgRef = useRef<SVGSVGElement>(null);
   const [hoverIndex, setHoverIndex] = useState<number | null>(null);
@@ -143,7 +148,8 @@ export default function TrendLineChart({ points }: { points: TendenciaPoint[] })
         >
           <div className="font-medium">{formatDateLabel(hovered.data_referencia)}</div>
           <div className="text-[var(--ink-secondary)]">
-            {hovered.pct_offline.toFixed(1)}% offline ({hovered.offline})
+            {hovered.pct_offline.toFixed(1)}% offline
+            {hovered.offline !== undefined ? ` (${hovered.offline})` : ""}
           </div>
         </div>
       )}
