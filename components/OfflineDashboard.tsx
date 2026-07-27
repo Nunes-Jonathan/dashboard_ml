@@ -1,9 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { TicketRow } from "@/lib/types";
+import type { FleetRow, TicketRow } from "@/lib/types";
 import {
   EMPTY_FILTERS,
+  computeStatusCounts,
   countBy,
   countByDate,
   topN,
@@ -34,6 +35,7 @@ export default function OfflineDashboard({
   weekComparison,
   manutencaoRisco,
   tickets,
+  fleet,
 }: {
   overview: OverviewResponse;
   placas: PlacaOfflineRow[];
@@ -41,6 +43,7 @@ export default function OfflineDashboard({
   weekComparison: WeekComparisonResponse;
   manutencaoRisco: ManutencaoRiscoResponse | null;
   tickets: TicketRow[];
+  fleet: FleetRow[];
 }) {
   const [filters, setFilters] = useState<FilterState>(EMPTY_FILTERS);
 
@@ -97,6 +100,10 @@ export default function OfflineDashboard({
   }, [manutencaoRisco, filters]);
 
   const o = overview.overview;
+  const { statusPendente, statusTratativa, statusAgendado } = useMemo(
+    () => computeStatusCounts(fleet),
+    [fleet]
+  );
 
   return (
     <main className="mx-auto max-w-7xl px-4 sm:px-6 py-6 flex flex-col gap-6">
@@ -119,6 +126,9 @@ export default function OfflineDashboard({
             value={String(weekComparison.novos_offline)}
             sub={`${weekComparison.recorrentes_offline} recorrentes`}
           />
+          <KpiCard label="Pendente" value={String(statusPendente)} accent="warning" />
+          <KpiCard label="Em tratativa" value={String(statusTratativa)} />
+          <KpiCard label="Agendado" value={String(statusAgendado)} accent="good" />
         </div>
         <p className="text-xs text-[var(--ink-muted)]">
           Nossa planilha própria acompanha uma frota bem menor — esta seção usa a base completa da

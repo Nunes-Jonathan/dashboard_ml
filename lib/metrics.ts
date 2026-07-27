@@ -105,6 +105,19 @@ export interface DashboardKpis {
   statusAgendado: number;
 }
 
+export function computeStatusCounts(fleet: FleetRow[]): {
+  statusPendente: number;
+  statusTratativa: number;
+  statusAgendado: number;
+} {
+  return {
+    statusPendente: fleet.filter((f) => f.status.trim().toLowerCase() === "pendente").length,
+    statusTratativa: fleet.filter((f) => f.status.trim().toLowerCase() === "em tratativa")
+      .length,
+    statusAgendado: fleet.filter((f) => f.status.trim().toLowerCase() === "agendado").length,
+  };
+}
+
 export function computeKpis(fleet: FleetRow[], tickets: TicketRow[]): DashboardKpis {
   const totalVehicles = fleet.length;
   const offline = fleet.filter((f) => (f.diasOffline ?? 0) > 0);
@@ -120,11 +133,7 @@ export function computeKpis(fleet: FleetRow[], tickets: TicketRow[]): DashboardK
   const offlineEmRota = offline.filter((f) =>
     f.statusVec.trim().toLowerCase().startsWith("ativo")
   ).length;
-  const statusPendente = fleet.filter((f) => f.status.trim().toLowerCase() === "pendente").length;
-  const statusTratativa = fleet.filter(
-    (f) => f.status.trim().toLowerCase() === "em tratativa"
-  ).length;
-  const statusAgendado = fleet.filter((f) => f.status.trim().toLowerCase() === "agendado").length;
+  const { statusPendente, statusTratativa, statusAgendado } = computeStatusCounts(fleet);
 
   return {
     totalVehicles,

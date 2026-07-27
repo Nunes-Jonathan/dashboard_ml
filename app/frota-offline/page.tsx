@@ -1,5 +1,5 @@
 import { fetchExternalTelemetriaData } from "@/lib/externalTelemetria";
-import { fetchTicketRows } from "@/lib/sheets";
+import { fetchFleetRows, fetchTicketRows } from "@/lib/sheets";
 import SiteHeader from "@/components/SiteHeader";
 import OfflineDashboard from "@/components/OfflineDashboard";
 
@@ -10,9 +10,10 @@ export const metadata = {
 };
 
 export default async function FrotaOfflinePage() {
-  const [external, tickets] = await Promise.all([
+  const [external, tickets, fleet] = await Promise.all([
     fetchExternalTelemetriaData(),
     fetchTicketRows(),
+    fetchFleetRows(),
   ]);
 
   return (
@@ -28,6 +29,7 @@ export default async function FrotaOfflinePage() {
         weekComparison={external.weekComparison}
         manutencaoRisco={external.manutencaoRisco}
         tickets={tickets}
+        fleet={fleet}
       />
     </div>
   );
