@@ -5,16 +5,13 @@ import type { TicketRow } from "@/lib/types";
 import {
   EMPTY_FILTERS,
   countBy,
+  countByDate,
   topN,
   uniqueSorted,
   round1,
   type FilterState,
 } from "@/lib/metrics";
-import {
-  applyOfflineFilters,
-  bucketDiasOfflineExternal,
-  buildOfflineActionableRows,
-} from "@/lib/offlineMetrics";
+import { applyOfflineFilters, buildOfflineActionableRows } from "@/lib/offlineMetrics";
 import type {
   ManutencaoRiscoResponse,
   OverviewResponse,
@@ -26,8 +23,7 @@ import FilterBar from "@/components/FilterBar";
 import KpiCard from "@/components/KpiCard";
 import ChartCard from "@/components/ChartCard";
 import BarList from "@/components/BarList";
-import StatusVecChart from "@/components/charts/StatusVecChart";
-import AgingChart from "@/components/charts/AgingChart";
+import AgendamentoPorDataChart from "@/components/charts/AgendamentoPorDataChart";
 import TrendLineChart from "@/components/TrendLineChart";
 import ManutencaoRiscoTable from "@/components/ManutencaoRiscoTable";
 import OfflineActionableTable from "@/components/OfflineActionableTable";
@@ -54,11 +50,8 @@ export default function OfflineDashboard({
       mlps: uniqueSorted(placas.map((p) => p.transportadora)),
       svcs: uniqueSorted(placas.map((p) => p.svc)),
       regionais: uniqueSorted(placas.map((p) => p.regional)),
-      clientes: uniqueSorted(tickets.map((t) => t.clienteOrigem || t.cliente)),
-      responsaveis: uniqueSorted(tickets.map((t) => t.responsavel)),
-      prioridades: uniqueSorted(tickets.map((t) => t.prioridadeGuerra)),
     }),
-    [placas, tickets]
+    [placas]
   );
 
   const { placas: filteredPlacas, tickets: filteredTickets } = useMemo(
@@ -71,14 +64,11 @@ export default function OfflineDashboard({
     [filteredPlacas, filteredTickets]
   );
 
-  const statusVeiculoItems = useMemo(
-    () => countBy(filteredPlacas.map((p) => p.status_veiculo)),
-    [filteredPlacas]
+  const agendamentoPorDataItems = useMemo(
+    () => countByDate(filteredTickets.map((t) => t.abertoEm)),
+    [filteredTickets]
   );
-  const agingItems = useMemo(
-    () => bucketDiasOfflineExternal(filteredPlacas.map((p) => p.dias_offline)),
-    [filteredPlacas]
-  );
+
   const regionalItems = useMemo(
     () => countBy(filteredPlacas.map((p) => p.regional)),
     [filteredPlacas]
@@ -90,14 +80,6 @@ export default function OfflineDashboard({
   const svcItems = useMemo(() => topN(countBy(filteredPlacas.map((p) => p.svc)), 10), [
     filteredPlacas,
   ]);
-
-  const subRegionalItems = useMemo(
-    () =>
-      [...overview.sub_regionais]
-        .sort((a, b) => b.offline - a.offline)
-        .map((s) => ({ label: s.sub_regional, count: s.offline })),
-    [overview.sub_regionais]
-  );
 
   const filteredManutencaoRisco = useMemo(() => {
     if (!manutencaoRisco) return manutencaoRisco;
@@ -170,18 +152,12 @@ export default function OfflineDashboard({
         <h2 className="text-sm font-semibold text-[var(--ink-secondary)] uppercase tracking-wide">
           Detalhamento (aplica filtros) — {filteredPlacas.length} de {placas.length} veículos
         </h2>
+        <ChartCard title="Chamados abertos por data" subtitle="Aberto em, por dia">
+          <AgendamentoPorDataChart items={agendamentoPorDataItems} />
+        </ChartCard>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <ChartCard title="Status do veículo">
-            <StatusVecChart items={statusVeiculoItems} />
-          </ChartCard>
-          <ChartCard title="Dias offline" subtitle="Mesmas faixas da API (3-29 / 30-99 / 100-199 / 200+)">
-            <AgingChart items={agingItems} />
-          </ChartCard>
           <ChartCard title="Regional">
             <BarList items={regionalItems} />
-          </ChartCard>
-          <ChartCard title="Sub-regional" subtitle="Frota completa — não filtrável (sem esse campo no detalhe)">
-            <BarList items={subRegionalItems} />
           </ChartCard>
           <ChartCard title="Transportadora" subtitle="Top 10">
             <BarList items={transportadoraItems} />

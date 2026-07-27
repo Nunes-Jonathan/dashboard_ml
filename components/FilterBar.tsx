@@ -9,9 +9,6 @@ interface FilterBarProps {
     mlps: string[];
     svcs: string[];
     regionais: string[];
-    clientes: string[];
-    responsaveis: string[];
-    prioridades: string[];
   };
 }
 
@@ -76,24 +73,6 @@ export default function FilterBar({ filters, onChange, options }: FilterBarProps
         placeholder="Todas as regionais"
         options={options.regionais}
       />
-      <FilterSelect
-        value={filters.cliente}
-        onChange={(v) => set("cliente", v)}
-        placeholder="Todos os clientes"
-        options={options.clientes}
-      />
-      <FilterSelect
-        value={filters.responsavel}
-        onChange={(v) => set("responsavel", v)}
-        placeholder="Todos os responsáveis"
-        options={options.responsaveis}
-      />
-      <FilterSelect
-        value={filters.prioridade}
-        onChange={(v) => set("prioridade", v)}
-        placeholder="Todas as prioridades"
-        options={options.prioridades}
-      />
       {active && (
         <button
           type="button"
@@ -102,9 +81,6 @@ export default function FilterBar({ filters, onChange, options }: FilterBarProps
               mlp: "",
               svc: "",
               regional: "",
-              cliente: "",
-              responsavel: "",
-              prioridade: "",
             })
           }
           className="text-xs text-[var(--ink-secondary)] hover:text-[var(--ink)] underline ml-auto"

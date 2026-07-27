@@ -29,15 +29,6 @@ export function topN(items: CountItem[], n: number): CountItem[] {
   return rest > 0 ? [...head, { label: "Outros", count: rest }] : head;
 }
 
-const OFFLINE_BUCKETS: [number, number, string][] = [
-  [0, 0, "0 dias"],
-  [1, 3, "1-3 dias"],
-  [4, 7, "4-7 dias"],
-  [8, 30, "8-30 dias"],
-  [31, 90, "31-90 dias"],
-  [91, Infinity, "90+ dias"],
-];
-
 export function bucketValues(
   values: (number | null)[],
   buckets: [number, number, string][]
@@ -49,10 +40,6 @@ export function bucketValues(
     if (idx >= 0) counts[idx].count += 1;
   }
   return counts;
-}
-
-export function bucketDiasOffline(values: (number | null)[]): CountItem[] {
-  return bucketValues(values, OFFLINE_BUCKETS);
 }
 
 const ACAO_BUCKETS: [number, number, string][] = [
@@ -197,31 +184,22 @@ export function buildActionableRows(fleet: FleetRow[], tickets: TicketRow[]): Ac
     });
 }
 
-/** The six "slicer" dimensions exposed as global filters, spanning both sheets. */
+/** The three "slicer" dimensions exposed as global filters, spanning both sheets. */
 export interface FilterState {
   mlp: string;
   svc: string;
   regional: string;
-  cliente: string;
-  responsavel: string;
-  prioridade: string;
 }
 
 export const EMPTY_FILTERS: FilterState = {
   mlp: "",
   svc: "",
   regional: "",
-  cliente: "",
-  responsavel: "",
-  prioridade: "",
 };
 
 /**
- * Filters fleet and ticket rows against one shared filter state, even though
- * some dimensions (MLP/SVC/Regional) live only on the fleet sheet and others
- * (Cliente/Responsável/Prioridade) only on the ticket sheet — each side is
- * cross-checked against its joined counterpart (by Placa) so picking e.g. a
- * Responsável also narrows the fleet-side charts to that person's vehicles.
+ * Filters fleet and ticket rows against one shared filter state, cross-checked
+ * against the joined counterpart (by Placa) on each side.
  */
 export function applyFilters(
   fleet: FleetRow[],
@@ -229,16 +207,11 @@ export function applyFilters(
   filters: FilterState
 ): { fleet: FleetRow[]; tickets: TicketRow[] } {
   const fleetByPlaca = indexByPlaca(fleet);
-  const ticketByPlaca = indexByPlaca(tickets);
 
   const filteredFleet = fleet.filter((f) => {
     if (filters.mlp && f.mlp !== filters.mlp) return false;
     if (filters.svc && f.svc !== filters.svc) return false;
     if (filters.regional && f.regional !== filters.regional) return false;
-    const t = ticketByPlaca.get(normPlaca(f.placa));
-    if (filters.cliente && resolveCliente(t, f) !== filters.cliente) return false;
-    if (filters.responsavel && (t?.responsavel ?? "") !== filters.responsavel) return false;
-    if (filters.prioridade && (t?.prioridadeGuerra ?? "") !== filters.prioridade) return false;
     return true;
   });
 
@@ -247,9 +220,6 @@ export function applyFilters(
     if (filters.mlp && (f?.mlp ?? "") !== filters.mlp) return false;
     if (filters.svc && (f?.svc ?? "") !== filters.svc) return false;
     if (filters.regional && (f?.regional ?? "") !== filters.regional) return false;
-    if (filters.cliente && resolveCliente(t, f) !== filters.cliente) return false;
-    if (filters.responsavel && t.responsavel !== filters.responsavel) return false;
-    if (filters.prioridade && t.prioridadeGuerra !== filters.prioridade) return false;
     return true;
   });
 

@@ -7,7 +7,6 @@ import {
   applyFilters,
   buildActionableRows,
   bucketDiasDesdeAcao,
-  bucketDiasOffline,
   computeKpis,
   countBy,
   countByDate,
@@ -19,7 +18,6 @@ import FilterBar from "@/components/FilterBar";
 import KpiHeader, { StatusKpiRow } from "@/components/KpiHeader";
 import ChartCard from "@/components/ChartCard";
 import BarList from "@/components/BarList";
-import StatusVecChart from "@/components/charts/StatusVecChart";
 import PriorityChart from "@/components/charts/PriorityChart";
 import SituacaoChart from "@/components/charts/SituacaoChart";
 import AgingChart from "@/components/charts/AgingChart";
@@ -40,9 +38,6 @@ export default function Dashboard({
       mlps: uniqueSorted(fleet.map((f) => f.mlp)),
       svcs: uniqueSorted(fleet.map((f) => f.svc)),
       regionais: uniqueSorted(fleet.map((f) => f.regional)),
-      clientes: uniqueSorted(tickets.map((t) => t.clienteOrigem || t.cliente)),
-      responsaveis: uniqueSorted(tickets.map((t) => t.responsavel)),
-      prioridades: uniqueSorted(tickets.map((t) => t.prioridadeGuerra)),
     }),
     [fleet, tickets]
   );
@@ -61,10 +56,6 @@ export default function Dashboard({
     [filteredFleet, filteredTickets]
   );
 
-  const statusVecItems = useMemo(
-    () => countBy(filteredFleet.map((f) => f.statusVec)),
-    [filteredFleet]
-  );
   const regionalItems = useMemo(
     () => countBy(filteredFleet.map((f) => f.regional)),
     [filteredFleet]
@@ -77,11 +68,6 @@ export default function Dashboard({
     () => topN(countBy(filteredFleet.map((f) => f.mlp)), 10),
     [filteredFleet]
   );
-  const offlineAgingItems = useMemo(
-    () => bucketDiasOffline(filteredFleet.map((f) => f.diasOffline)),
-    [filteredFleet]
-  );
-
   const prioridadeItems = useMemo(
     () => countBy(filteredTickets.map((t) => t.prioridadeGuerra)),
     [filteredTickets]
@@ -127,12 +113,6 @@ export default function Dashboard({
           Status da frota (Relação Geral)
         </h2>
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <ChartCard title="Status do veículo" subtitle="STATUS VEC">
-            <StatusVecChart items={statusVecItems} />
-          </ChartCard>
-          <ChartCard title="Dias offline" subtitle="Distribuição por faixa">
-            <AgingChart items={offlineAgingItems} />
-          </ChartCard>
           <ChartCard title="Regional">
             <BarList items={regionalItems} />
           </ChartCard>

@@ -151,9 +151,6 @@ export function applyGeotabFilters(
     if (filters.mlp && r.mlp !== filters.mlp) return false;
     if (filters.svc && r.svc !== filters.svc) return false;
     if (filters.regional && r.regional !== filters.regional) return false;
-    if (filters.cliente && r.cliente !== filters.cliente) return false;
-    if (filters.responsavel && r.responsavel !== filters.responsavel) return false;
-    if (filters.prioridade && r.prioridadeGuerra !== filters.prioridade) return false;
     return true;
   });
 }
