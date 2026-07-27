@@ -8,7 +8,6 @@ import {
   countByDate,
   topN,
   uniqueSorted,
-  round1,
   type FilterState,
 } from "@/lib/metrics";
 import { applyOfflineFilters, buildOfflineActionableRows } from "@/lib/offlineMetrics";
@@ -110,27 +109,16 @@ export default function OfflineDashboard({
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
           <KpiCard label="Total offline" value={String(o.total_offline)} sub={`de ${o.total_ff} veículos`} />
           <KpiCard
-            label="% offline"
-            value={`${round1(o.pct_offline)}%`}
-            accent={o.pct_offline >= 15 ? "critical" : o.pct_offline >= 10 ? "warning" : undefined}
-          />
-          <KpiCard
             label="Offline em rota"
             value={String(o.em_rota_off)}
             sub="Ativo/bipando mas offline"
             accent="critical"
           />
-          <KpiCard label="Em manutenção" value={String(o.manut_off)} accent="warning" />
-          <KpiCard label="Frota ociosa" value={String(o.ociosa_off)} />
           <KpiCard
             label="Novos offline (semana)"
             value={String(weekComparison.novos_offline)}
             sub={`${weekComparison.recorrentes_offline} recorrentes`}
           />
-          <KpiCard label="3-29 dias" value={String(o.off_3_29)} />
-          <KpiCard label="30-99 dias" value={String(o.off_30_99)} />
-          <KpiCard label="100-199 dias" value={String(o.off_100_200)} accent="warning" />
-          <KpiCard label="200+ dias" value={String(o.off_200_plus)} accent="critical" />
         </div>
         <p className="text-xs text-[var(--ink-muted)]">
           Nossa planilha própria acompanha uma frota bem menor — esta seção usa a base completa da
