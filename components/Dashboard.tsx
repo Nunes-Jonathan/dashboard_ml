@@ -11,12 +11,16 @@ import {
   computeKpis,
   countBy,
   countByDate,
+  round1,
   topN,
   uniqueSorted,
   type FilterState,
 } from "@/lib/metrics";
+import { Ticket, ListChecks, Truck } from "lucide-react";
 import FilterBar from "@/components/FilterBar";
 import KpiHeader, { StatusKpiRow } from "@/components/KpiHeader";
+import HeroKpi from "@/components/HeroKpi";
+import SectionHeader from "@/components/SectionHeader";
 import ChartCard from "@/components/ChartCard";
 import BarList from "@/components/BarList";
 import StatusVecChart from "@/components/charts/StatusVecChart";
@@ -115,71 +119,98 @@ export default function Dashboard({
     [filteredTickets]
   );
 
+  const noTicketAccent = kpis.noTicketPct >= 50 ? "critical" : kpis.noTicketPct >= 20 ? "warning" : "good";
+
   return (
-    <main className="mx-auto max-w-7xl px-4 sm:px-6 py-6 flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <FilterBar filters={filters} onChange={setFilters} options={filterOptions} />
 
-      <KpiHeader kpis={kpis} />
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        <div className="lg:col-span-2 self-start">
+          <HeroKpi
+            label="Sem chamado aberto"
+            value={String(kpis.noTicketCount)}
+            sub={`${round1(kpis.noTicketPct)}% dos casos de AGENDAMENTO não têm chamado — o maior gargalo deste painel`}
+            accent={noTicketAccent}
+          />
+        </div>
+        <div className="lg:col-span-3">
+          <KpiHeader kpis={kpis} />
+        </div>
+      </div>
       <StatusKpiRow kpis={kpis} />
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-[var(--ink-secondary)] uppercase tracking-wide">
-          Status da frota (Relação Geral)
-        </h2>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <ChartCard title="Status do veículo" subtitle="STATUS VEC">
-            <StatusVecChart items={statusVecItems} />
-          </ChartCard>
-          <ChartCard title="Dias offline" subtitle="Distribuição por faixa">
+        <SectionHeader icon={Truck}>Status da frota (Relação Geral)</SectionHeader>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <ChartCard
+            title="Dias offline"
+            subtitle="Quantidade de veículos offline, agrupados por dias sem comunicação"
+            className="md:col-span-2"
+          >
             <AgingChart items={offlineAgingItems} />
           </ChartCard>
-          <ChartCard title="Regional">
+          <ChartCard
+            title="Status do veículo"
+            subtitle="Quantidade de veículos por status atual (Ativo, Manutenção, Frota ociosa...)"
+          >
+            <StatusVecChart items={statusVecItems} />
+          </ChartCard>
+          <ChartCard title="Regional" subtitle="Quantidade de veículos por regional">
             <BarList items={regionalItems} />
           </ChartCard>
-          <ChartCard title="Estado" subtitle="Top 8">
+          <ChartCard title="Estado" subtitle="Top 8 estados por nº de veículos">
             <BarList items={estadoItems} />
           </ChartCard>
-          <ChartCard title="Clientes (MLP)" subtitle="Top 10 por nº de veículos">
+          <ChartCard title="Clientes (MLP)" subtitle="Top 10 clientes por nº de veículos na frota">
             <BarList items={clienteFrotaItems} />
           </ChartCard>
         </div>
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-[var(--ink-secondary)] uppercase tracking-wide">
-          Triagem de chamados (AGENDAMENTO)
-        </h2>
-        <ChartCard title="Chamados abertos por data" subtitle="Aberto em, por dia">
+        <SectionHeader icon={Ticket}>Triagem de chamados (AGENDAMENTO)</SectionHeader>
+        <ChartCard
+          title="Chamados abertos por data"
+          subtitle="Quantidade de chamados abertos por dia (campo Aberto em)"
+        >
           <AgendamentoPorDataChart items={agendamentoPorDataItems} />
         </ChartCard>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <ChartCard title="Prioridade" subtitle="Prioridade guerra">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <ChartCard title="Prioridade" subtitle="Quantidade de chamados por nível de prioridade">
             <PriorityChart items={prioridadeItems} />
           </ChartCard>
-          <ChartCard title="Situação">
+          <ChartCard title="Situação" subtitle="Quantidade de chamados por situação atual">
             <SituacaoChart items={situacaoItems} />
           </ChartCard>
-          <ChartCard title="Tem chamado aberto?">
+          <ChartCard
+            title="Tem chamado aberto?"
+            subtitle="Quantos veículos offline têm um chamado aberto vs. nenhum chamado"
+          >
             <BarList items={temChamadoItems} />
           </ChartCard>
-          <ChartCard title="Dias desde última ação" subtitle="Casos parados há mais tempo">
+          <ChartCard
+            title="Dias desde última ação"
+            subtitle="Quantidade de chamados por tempo sem nenhuma atualização — casos parados há mais tempo"
+          >
             <AgingChart items={acaoAgingItems} />
           </ChartCard>
-          <ChartCard title="Carga por responsável" subtitle="Top 8 — casos com responsável atribuído">
+          <ChartCard
+            title="Carga por responsável"
+            subtitle="Top 8 responsáveis por nº de chamados atribuídos"
+          >
             <BarList items={responsavelItems} />
           </ChartCard>
-          <ChartCard title="Clientes" subtitle="Top 10 por nº de casos">
+          <ChartCard title="Clientes" subtitle="Top 10 clientes por nº de chamados abertos">
             <BarList items={clienteTicketItems} />
           </ChartCard>
         </div>
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-[var(--ink-secondary)] uppercase tracking-wide">
-          Lista de ação
-        </h2>
+        <SectionHeader icon={ListChecks}>Lista de ação</SectionHeader>
         <ActionableTable rows={actionableRows} />
       </section>
-    </main>
+    </div>
   );
 }

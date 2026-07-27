@@ -48,7 +48,7 @@ export default function ThemeToggle() {
     <button
       type="button"
       onClick={toggle}
-      className="rounded-md border px-3 py-1.5 text-sm text-[var(--ink-secondary)] hover:text-[var(--ink)] transition-colors"
+      className="rounded-md border px-3 py-1.5 text-sm text-[var(--ink-secondary)] hover:text-[var(--ink)] hover:bg-[var(--page)] transition-all duration-200 ease-[var(--ease-out-premium)]"
       style={{ borderColor: "var(--border)" }}
       aria-label="Alternar tema claro/escuro"
     >

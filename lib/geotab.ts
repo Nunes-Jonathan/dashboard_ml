@@ -62,6 +62,18 @@ async function resolveBase(): Promise<string> {
 async function fetchGeotabEntity<T>(path: string, timeoutMs?: number): Promise<T[]> {
   async function attempt(): Promise<T[]> {
     const base = await resolveBase();
+    // Every entity here has been measured over Next.js's 2MB Data Cache
+    // per-item limit (from ~3MB DeviceGroups slices up to ~154MB for
+    // VehicleKpi_Daily) — asking Next to cache them always fails and logs a
+    // warning on every request. Switching this to `cache: "no-store"` does
+    // silence that warning, but it also makes Next.js treat the whole
+    // /geotab route as fully dynamic instead of static+ISR (confirmed via
+    // `next build` output: the route flipped from "○ Static, revalidate 600s"
+    // to "ƒ Dynamic, server-rendered on demand") — meaning every visitor
+    // would then wait out the full ~1-3min Geotab fetch chain on every
+    // request instead of getting the pre-rendered page instantly. That's a
+    // real regression for a genuinely cosmetic fix, so this stays on
+    // `next: { revalidate }` and the console warning is accepted as noise.
     const init: RequestInit & { next?: { revalidate: number } } = {
       headers: { Authorization: authHeader() },
       next: { revalidate: REVALIDATE_SECONDS },

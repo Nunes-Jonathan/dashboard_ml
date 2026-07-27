@@ -11,8 +11,11 @@ import {
   type CountItem,
   type FilterState,
 } from "@/lib/metrics";
+import { Wifi, TrendingUp, SlidersHorizontal, AlertTriangle, ListChecks } from "lucide-react";
 import FilterBar from "@/components/FilterBar";
 import KpiCard from "@/components/KpiCard";
+import HeroKpi from "@/components/HeroKpi";
+import SectionHeader from "@/components/SectionHeader";
 import ChartCard from "@/components/ChartCard";
 import BarList from "@/components/BarList";
 import TrendLineChart from "@/components/TrendLineChart";
@@ -53,6 +56,7 @@ export default function GeotabDashboard({
   const totalDevices = filteredRows.length;
   const offlineDevices = filteredRows.filter((r) => r.isOffline).length;
   const offlinePct = totalDevices ? (offlineDevices / totalDevices) * 100 : 0;
+  const offlineAccent = offlinePct >= 50 ? "critical" : offlinePct >= 25 ? "warning" : undefined;
   const devicesWithFaults = filteredRows.filter((r) => r.activeVehicleFaults > 0).length;
   const activeFaultRecords = filteredRows.reduce(
     (sum, r) => sum + r.activeVehicleFaults + r.activeDeviceFaults,
@@ -68,27 +72,38 @@ export default function GeotabDashboard({
   );
 
   return (
-    <main className="mx-auto max-w-7xl px-4 sm:px-6 py-6 flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <FilterBar filters={filters} onChange={setFilters} options={filterOptions} />
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-[var(--ink-secondary)] uppercase tracking-wide">
-          Conectividade (fonte Geotab)
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <KpiCard label="Dispositivos" value={String(totalDevices)} />
-          <KpiCard
-            label="Não comunicando (24h)"
-            value={String(offlineDevices)}
-            sub={`${round1(offlinePct)}% dos dispositivos`}
-            accent={offlinePct >= 50 ? "critical" : offlinePct >= 25 ? "warning" : undefined}
-          />
-          <KpiCard
-            label="Com falhas ativas"
-            value={String(devicesWithFaults)}
-            accent={devicesWithFaults > 0 ? "warning" : undefined}
-          />
-          <KpiCard label="Falhas ativas (registros)" value={String(activeFaultRecords)} />
+        <SectionHeader icon={Wifi}>Conectividade (fonte Geotab)</SectionHeader>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+          <div className="lg:col-span-2 self-start">
+            <HeroKpi
+              label="Não comunicando (24h)"
+              value={String(offlineDevices)}
+              sub={`${round1(offlinePct)}% dos ${totalDevices} dispositivos não enviaram dados nas últimas 24h`}
+              accent={offlineAccent}
+            />
+          </div>
+          <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-3 gap-3">
+            <KpiCard
+              label="Dispositivos"
+              value={String(totalDevices)}
+              sub="Total de dispositivos Geotab com vínculo ativo a um veículo"
+            />
+            <KpiCard
+              label="Com falhas ativas"
+              value={String(devicesWithFaults)}
+              sub="Dispositivos com pelo menos 1 falha ativa nas últimas 24h"
+              accent={devicesWithFaults > 0 ? "warning" : undefined}
+            />
+            <KpiCard
+              label="Falhas ativas (registros)"
+              value={String(activeFaultRecords)}
+              sub="Soma de falhas de veículo + de dispositivo, últimas 24h"
+            />
+          </div>
         </div>
         <p className="text-xs text-[var(--ink-muted)]">
           Dados direto do conector OData da Geotab (fabricante do rastreador) — a fonte mais
@@ -98,58 +113,60 @@ export default function GeotabDashboard({
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-[var(--ink-secondary)] uppercase tracking-wide">
-          Tendência — últimos {trendDays} dias
-        </h2>
+        <SectionHeader icon={TrendingUp}>Tendência — últimos {trendDays} dias</SectionHeader>
         <ChartCard
           title="% de dispositivos não comunicando por dia"
-          subtitle="VehicleKpi_Daily, Device_Health"
+          subtitle={`Percentual de dispositivos sem comunicação, por dia, nos últimos ${trendDays} dias`}
         >
           <TrendLineChart points={trend} />
         </ChartCard>
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-[var(--ink-secondary)] uppercase tracking-wide">
-          Detalhamento (aplica filtros)
-        </h2>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <ChartCard title="Regional">
-            <BarList items={regionalItems} />
-          </ChartCard>
-          <ChartCard title="SVC" subtitle="Top 10">
-            <BarList items={svcItems} />
-          </ChartCard>
-          <ChartCard title="MLP" subtitle="Top 10">
+        <SectionHeader icon={SlidersHorizontal}>Detalhamento (aplica filtros)</SectionHeader>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <ChartCard
+            title="MLP"
+            subtitle="Top 10 MLPs (transportadoras) por nº de dispositivos"
+            className="md:col-span-2"
+          >
             <BarList items={mlpItems} />
           </ChartCard>
-          <ChartCard title="Locadora">
+          <ChartCard title="Regional" subtitle="Quantidade de dispositivos por regional">
+            <BarList items={regionalItems} />
+          </ChartCard>
+          <ChartCard title="SVC" subtitle="Top 10 SVCs (centros de serviço) por nº de dispositivos">
+            <BarList items={svcItems} />
+          </ChartCard>
+          <ChartCard
+            title="Locadora"
+            subtitle="Quantidade de dispositivos por locadora (quando aplicável)"
+          >
             <BarList items={locadoraItems} />
           </ChartCard>
         </div>
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-[var(--ink-secondary)] uppercase tracking-wide">
-          Falhas ativas
-        </h2>
+        <SectionHeader icon={AlertTriangle}>Falhas ativas</SectionHeader>
         <p className="text-xs text-[var(--ink-muted)]">
           Visão da frota completa (top 10 tipos de falha, top {topFaultRows.length} registros por
           nº de ocorrências) — não filtrável pelos filtros acima, dado o volume de dados (~62 mil
           registros de falha no total).
         </p>
-        <ChartCard title="Principais falhas ativas" subtitle="Top 10 por nº de ocorrências">
+        <ChartCard
+          title="Principais falhas ativas"
+          subtitle="Top 10 tipos de falha mais frequentes, por nº de ocorrências"
+        >
           <BarList items={topFaultItems} />
         </ChartCard>
         <GeotabFaultTable rows={topFaultRows} />
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-[var(--ink-secondary)] uppercase tracking-wide">
-          Lista de ação — dispositivos Geotab
-        </h2>
+        <SectionHeader icon={ListChecks}>Lista de ação — dispositivos Geotab</SectionHeader>
         <GeotabActionableTable rows={filteredRows} />
       </section>
-    </main>
+    </div>
   );
 }

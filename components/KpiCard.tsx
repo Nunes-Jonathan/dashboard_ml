@@ -15,7 +15,7 @@ export default function KpiCard({ label, value, sub, accent }: KpiCardProps) {
   return (
     <div
       className="rounded-xl border p-4 flex flex-col gap-1 bg-[var(--surface)]"
-      style={{ borderColor: "var(--border)" }}
+      style={{ borderColor: "var(--border)", boxShadow: "var(--shadow-card)" }}
     >
       <span className="text-xs uppercase tracking-wide text-[var(--ink-muted)]">{label}</span>
       <span
@@ -24,7 +24,7 @@ export default function KpiCard({ label, value, sub, accent }: KpiCardProps) {
       >
         {value}
       </span>
-      {sub && <span className="text-xs text-[var(--ink-secondary)]">{sub}</span>}
+      {sub && <span className="text-sm text-[var(--ink-secondary)] leading-snug">{sub}</span>}
     </div>
   );
 }

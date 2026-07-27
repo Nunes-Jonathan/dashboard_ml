@@ -8,7 +8,6 @@ import {
   buildGeotabFaultRows,
 } from "@/lib/geotabMetrics";
 import { countBy, topN, uniqueSorted } from "@/lib/metrics";
-import SiteHeader from "@/components/SiteHeader";
 import GeotabDashboard from "@/components/GeotabDashboard";
 
 export const revalidate = 600;
@@ -58,19 +57,13 @@ export default async function GeotabPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[var(--page)]">
-      <SiteHeader
-        title="Geotab — Fonte Nativa"
-        subtitle="Conectividade e falhas direto do conector Geotab, cruzado com AGENDAMENTO — atualiza a cada 10 min"
-      />
-      <GeotabDashboard
-        actionableRows={actionableRows}
-        topFaultRows={topFaultRows}
-        topFaultItems={topFaultItems}
-        trend={trend}
-        trendDays={TREND_DAYS}
-        filterOptions={filterOptions}
-      />
-    </div>
+    <GeotabDashboard
+      actionableRows={actionableRows}
+      topFaultRows={topFaultRows}
+      topFaultItems={topFaultItems}
+      trend={trend}
+      trendDays={TREND_DAYS}
+      filterOptions={filterOptions}
+    />
   );
 }

@@ -20,7 +20,7 @@ export default function RefreshButton() {
       type="button"
       onClick={handleClick}
       disabled={loading}
-      className="rounded-md border px-3 py-1.5 text-sm text-[var(--ink-secondary)] hover:text-[var(--ink)] transition-colors disabled:opacity-50"
+      className="rounded-md border px-3 py-1.5 text-sm text-[var(--ink-secondary)] hover:text-[var(--ink)] hover:bg-[var(--page)] transition-all duration-200 ease-[var(--ease-out-premium)] disabled:opacity-50"
       style={{ borderColor: "var(--border)" }}
     >
       {loading ? "Atualizando..." : "Atualizar dados"}

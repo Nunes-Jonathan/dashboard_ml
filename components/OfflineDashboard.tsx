@@ -22,8 +22,11 @@ import type {
   TendenciaPoint,
   WeekComparisonResponse,
 } from "@/lib/externalTelemetria";
+import { Globe, TrendingUp, SlidersHorizontal, Wrench, ListChecks } from "lucide-react";
 import FilterBar from "@/components/FilterBar";
 import KpiCard from "@/components/KpiCard";
+import HeroKpi from "@/components/HeroKpi";
+import SectionHeader from "@/components/SectionHeader";
 import ChartCard from "@/components/ChartCard";
 import BarList from "@/components/BarList";
 import StatusVecChart from "@/components/charts/StatusVecChart";
@@ -117,38 +120,71 @@ export default function OfflineDashboard({
 
   const o = overview.overview;
 
+  const pctAccent = o.pct_offline >= 15 ? "critical" : o.pct_offline >= 10 ? "warning" : undefined;
+
   return (
-    <main className="mx-auto max-w-7xl px-4 sm:px-6 py-6 flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <FilterBar filters={filters} onChange={setFilters} options={filterOptions} />
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-[var(--ink-secondary)] uppercase tracking-wide">
+        <SectionHeader icon={Globe}>
           Frota completa (não filtrado) — {overview.snapshotInfo.data_snapshot}
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3">
-          <KpiCard label="Total offline" value={String(o.total_offline)} sub={`de ${o.total_ff} veículos`} />
-          <KpiCard
-            label="% offline"
-            value={`${round1(o.pct_offline)}%`}
-            accent={o.pct_offline >= 15 ? "critical" : o.pct_offline >= 10 ? "warning" : undefined}
-          />
-          <KpiCard
-            label="Offline em rota"
-            value={String(o.em_rota_off)}
-            sub="Ativo/bipando mas offline"
-            accent="critical"
-          />
-          <KpiCard label="Em manutenção" value={String(o.manut_off)} accent="warning" />
-          <KpiCard label="Frota ociosa" value={String(o.ociosa_off)} />
-          <KpiCard
-            label="Novos offline (semana)"
-            value={String(weekComparison.novos_offline)}
-            sub={`${weekComparison.recorrentes_offline} recorrentes`}
-          />
-          <KpiCard label="3-29 dias" value={String(o.off_3_29)} />
-          <KpiCard label="30-99 dias" value={String(o.off_30_99)} />
-          <KpiCard label="100-199 dias" value={String(o.off_100_200)} accent="warning" />
-          <KpiCard label="200+ dias" value={String(o.off_200_plus)} accent="critical" />
+        </SectionHeader>
+        <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+          <div className="lg:col-span-2 self-start">
+            <HeroKpi
+              label="Total offline"
+              value={String(o.total_offline)}
+              sub={`${round1(o.pct_offline)}% de ${o.total_ff} veículos na frota completa da Mercado Livre`}
+              accent={pctAccent}
+            />
+          </div>
+          <div className="lg:col-span-3 grid grid-cols-2 md:grid-cols-3 gap-3">
+            <KpiCard
+              label="Offline em rota"
+              value={String(o.em_rota_off)}
+              sub="Status Ativo/Bipando, mas sem comunicação — deveriam estar em rota"
+              accent="critical"
+            />
+            <KpiCard
+              label="Em manutenção"
+              value={String(o.manut_off)}
+              sub="Veículos offline atualmente com status Em manutenção"
+              accent="warning"
+            />
+            <KpiCard
+              label="Frota ociosa"
+              value={String(o.ociosa_off)}
+              sub="Veículos offline atualmente classificados como frota ociosa"
+            />
+            <KpiCard
+              label="Novos offline (semana)"
+              value={String(weekComparison.novos_offline)}
+              sub={`Ficaram offline pela 1ª vez esta semana — ${weekComparison.recorrentes_offline} já eram offline recorrentes`}
+            />
+            <KpiCard
+              label="3-29 dias offline"
+              value={String(o.off_3_29)}
+              sub="Nº de veículos sem comunicação há 3 a 29 dias"
+            />
+            <KpiCard
+              label="30-99 dias offline"
+              value={String(o.off_30_99)}
+              sub="Nº de veículos sem comunicação há 30 a 99 dias"
+            />
+            <KpiCard
+              label="100-199 dias offline"
+              value={String(o.off_100_200)}
+              sub="Nº de veículos sem comunicação há 100 a 199 dias"
+              accent="warning"
+            />
+            <KpiCard
+              label="200+ dias offline"
+              value={String(o.off_200_plus)}
+              sub="Nº de veículos sem comunicação há 200 dias ou mais"
+              accent="critical"
+            />
+          </div>
         </div>
         <p className="text-xs text-[var(--ink-muted)]">
           Nossa planilha própria acompanha uma frota bem menor — esta seção usa a base completa da
@@ -158,44 +194,59 @@ export default function OfflineDashboard({
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-[var(--ink-secondary)] uppercase tracking-wide">
-          Tendência — últimos 60 dias
-        </h2>
-        <ChartCard title="% da frota offline" subtitle="Passe o mouse para ver cada dia">
+        <SectionHeader icon={TrendingUp}>Tendência — últimos 60 dias</SectionHeader>
+        <ChartCard
+          title="% da frota offline"
+          subtitle="Percentual da frota completa sem comunicação, por dia — passe o mouse para ver cada dia"
+        >
           <TrendLineChart points={tendencia} />
         </ChartCard>
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-[var(--ink-secondary)] uppercase tracking-wide">
+        <SectionHeader icon={SlidersHorizontal}>
           Detalhamento (aplica filtros) — {filteredPlacas.length} de {placas.length} veículos
-        </h2>
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <ChartCard title="Status do veículo">
-            <StatusVecChart items={statusVeiculoItems} />
-          </ChartCard>
-          <ChartCard title="Dias offline" subtitle="Mesmas faixas da API (3-29 / 30-99 / 100-199 / 200+)">
+        </SectionHeader>
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+          <ChartCard
+            title="Dias offline"
+            subtitle="Quantidade de veículos offline por faixa de dias sem comunicação (mesmas faixas da API: 3-29 / 30-99 / 100-199 / 200+)"
+            className="md:col-span-2"
+          >
             <AgingChart items={agingItems} />
           </ChartCard>
-          <ChartCard title="Regional">
+          <ChartCard
+            title="Status do veículo"
+            subtitle="Quantidade de veículos offline por status atual"
+          >
+            <StatusVecChart items={statusVeiculoItems} />
+          </ChartCard>
+          <ChartCard title="Regional" subtitle="Quantidade de veículos offline por regional">
             <BarList items={regionalItems} />
           </ChartCard>
-          <ChartCard title="Sub-regional" subtitle="Frota completa — não filtrável (sem esse campo no detalhe)">
+          <ChartCard
+            title="Sub-regional"
+            subtitle="Quantidade de veículos offline por sub-regional — frota completa, não filtrável (sem esse campo no detalhe)"
+          >
             <BarList items={subRegionalItems} />
           </ChartCard>
-          <ChartCard title="Transportadora" subtitle="Top 10">
+          <ChartCard
+            title="Transportadora"
+            subtitle="Top 10 transportadoras por nº de veículos offline"
+          >
             <BarList items={transportadoraItems} />
           </ChartCard>
-          <ChartCard title="SVC" subtitle="Top 10">
+          <ChartCard
+            title="SVC"
+            subtitle="Top 10 SVCs (centros de serviço) por nº de veículos offline"
+          >
             <BarList items={svcItems} />
           </ChartCard>
         </div>
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-[var(--ink-secondary)] uppercase tracking-wide">
-          Risco de manutenção
-        </h2>
+        <SectionHeader icon={Wrench}>Risco de manutenção</SectionHeader>
         <p className="text-xs text-[var(--ink-muted)]">
           Veículos atualmente em manutenção com histórico indicando risco de voltar offline.
         </p>
@@ -203,11 +254,9 @@ export default function OfflineDashboard({
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-sm font-semibold text-[var(--ink-secondary)] uppercase tracking-wide">
-          Lista de ação — frota offline completa
-        </h2>
+        <SectionHeader icon={ListChecks}>Lista de ação — frota offline completa</SectionHeader>
         <OfflineActionableTable rows={actionableRows} />
       </section>
-    </main>
+    </div>
   );
 }

@@ -43,7 +43,7 @@ export default function BarList({ items, colorFor, formatValue, maxItems }: BarL
               style={{ background: chrome.gridline }}
             >
               <div
-                className="h-full rounded-full transition-[width] duration-300"
+                className="h-full rounded-full transition-[width] duration-300 ease-[var(--ease-out-premium)]"
                 style={{ width: `${pct}%`, background: color }}
               />
             </div>
