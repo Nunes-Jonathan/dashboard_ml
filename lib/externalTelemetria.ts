@@ -105,17 +105,6 @@ interface TendenciaResponse {
   geral: TendenciaPoint[];
 }
 
-export interface WeekComparisonResponse {
-  updatedAt: string;
-  periodo: string;
-  current_week_start: string;
-  previous_week_start: string;
-  total_offline_atual: number;
-  total_offline_anterior: number;
-  novos_offline: number;
-  recorrentes_offline: number;
-}
-
 export interface ManutencaoRiscoRow {
   placa: string;
   transportadora: string;
@@ -178,31 +167,11 @@ export async function fetchTendencia(days: number): Promise<TendenciaPoint[]> {
   return data.geral;
 }
 
-export function fetchWeekComparison(): Promise<WeekComparisonResponse> {
-  return fetchJson<WeekComparisonResponse>(
-    `${EXTERNAL_BASE}/api/telemetria/week-comparison?periodo=semana`
-  );
-}
-
-/** This endpoint has been observed to be slow/flaky (50s+ sometimes) — best-effort, never throws. */
-export async function fetchManutencaoRisco(): Promise<ManutencaoRiscoResponse | null> {
-  try {
-    return await fetchJson<ManutencaoRiscoResponse>(
-      `${EXTERNAL_BASE}/api/telemetria/manutencao-risco?limit=1000`,
-      20000
-    );
-  } catch {
-    return null;
-  }
-}
-
 export async function fetchExternalTelemetriaData() {
-  const [overview, placas, tendencia, weekComparison, manutencaoRisco] = await Promise.all([
+  const [overview, placas, tendencia] = await Promise.all([
     fetchOverview(),
     fetchOfflinePlacas(),
     fetchTendencia(60),
-    fetchWeekComparison(),
-    fetchManutencaoRisco(),
   ]);
-  return { overview, placas, tendencia, weekComparison, manutencaoRisco };
+  return { overview, placas, tendencia };
 }

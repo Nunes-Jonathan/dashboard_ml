@@ -26,8 +26,6 @@ export default async function FrotaOfflinePage() {
         overview={external.overview}
         placas={external.placas}
         tendencia={external.tendencia}
-        weekComparison={external.weekComparison}
-        manutencaoRisco={external.manutencaoRisco}
         tickets={tickets}
         fleet={fleet}
       />
